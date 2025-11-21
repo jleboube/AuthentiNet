@@ -1,0 +1,35 @@
+services:
+  api:
+    build: ./backend
+    environment:
+      - PORT=43100
+      - MONGODB_URI=${MONGODB_URI:-mongodb://mongo:27017/authentinet}
+      - JWT_SECRET=${JWT_SECRET:-change-me}
+      - RECAPTCHA_SECRET=${RECAPTCHA_SECRET:-}
+    ports:
+      - "43100:43100"
+    depends_on:
+      - mongo
+  web:
+    build:
+      context: ./frontend
+      args:
+        - VITE_API_URL=http://api:43100
+    environment:
+      - VITE_API_URL=http://api:43100
+    ports:
+      - "43210:43210"
+    depends_on:
+      - api
+  mongo:
+    image: mongo:7.0
+    restart: unless-stopped
+    ports:
+      - "43017:27017"
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=authentinet
+
+volumes:
+  mongo-data:
